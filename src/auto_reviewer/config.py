@@ -6,7 +6,7 @@ from typing import Literal
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
-DIR_ENVS = ("AUTO_REVIEWER_CONFIG_DIR", "HERDR_PLUGIN_CONFIG_DIR")
+DIR_ENV = "AUTO_REVIEWER_CONFIG_DIR"
 
 
 @dataclass(frozen=True)
@@ -42,7 +42,7 @@ class Config:
 
 
 def directory() -> Path:
-    dirs = [Path(d) for d in map(os.environ.get, DIR_ENVS) if d] + [ROOT]
+    dirs = [Path(d) for d in (os.environ.get(DIR_ENV),) if d] + [ROOT]
     return next((d for d in dirs if (d / "config.yaml").exists()), dirs[0])
 
 

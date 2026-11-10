@@ -10,8 +10,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-from auto_reviewer import herdr
-
 HISTORY = 1000
 TITLE = "Auto Reviewer"
 FOOTER = (("Ctrl+Click", "Open PR"), ("c", "clear"), ("d", "debug"), ("q", "quit"))
@@ -23,7 +21,6 @@ CENTERED = {"Status", "Comments"}
 ALIGN = [str.center if h in CENTERED else str.ljust for h in HEADERS]
 FLAG = HEADERS.index("Status")
 PULL = re.compile(r"([^/]+)/pull/(\d+)$")
-EVENT = re.compile(r"^\S+ \S+ (INFO|ERROR) (\S+): (reviewing|posted|no new valid|dry run|)")
 
 
 class Tail:
@@ -91,34 +88,6 @@ def short(url: str) -> str:
     return f"{m[1]}#{m[2]}" if (m := PULL.search(url)) else url
 
 
-@dataclass(frozen=True)
-class Event:
-    state: str
-    text: str
-    toast: tuple[str, str] | None = None
-
-
-def event(line: str) -> Event | None:
-    if p := posted(line):
-        title = f"{p.status} {short(p.url)}"
-        return Event("idle", title, (title, f"{p.author}, {p.comments} comments"))
-    if not (m := EVENT.match(line)):
-        return None
-    level, url, kind = m.groups()
-    if level == "ERROR":
-        return Event("idle", f"Failed {short(url)}")
-    if kind == "reviewing":
-        return Event("working", f"Reviewing {short(url)}")
-    return Event("idle", f"Checked {short(url)}") if kind else None
-
-
-def report(lines: list[str]) -> None:
-    for e in filter(None, map(event, lines)):
-        herdr.status(e.state, e.text)
-        if e.toast:
-            herdr.notify(*e.toast)
-
-
 def layout(rows: list[Posted], width: int) -> tuple[list[tuple[str, ...]], list[int]]:
     cells = [HEADERS, *((r.time, r.author, r.url, r.status, r.comments) for r in rows)]
     widths = [max(map(len, col)) for col in zip(*cells)]
@@ -162,10 +131,8 @@ def frame(win: curses.window, title: str) -> tuple[int, int]:
     return h - 2, w - 2
 
 
-def draw_table(win: curses.window, tail: Tail, boxed: bool, style: Style) -> str:
-    h, w = win.getmaxyx()
-    # curses fails on a write to the bottom-right cell, so keep one free column without a box
-    (inner_h, inner_w), pad = (frame(win, "Reviews"), 1) if boxed else ((h, w - 1), 0)
+def draw_table(win: curses.window, tail: Tail, style: Style) -> str:
+    inner_h, inner_w = frame(win, "Reviews")
     rows = [p for p in map(posted, reversed(tail.lines)) if p]
     _, widths = layout(rows, inner_w)
     start, end = span(widths, FLAG)
@@ -175,13 +142,13 @@ def draw_table(win: curses.window, tail: Tail, boxed: bool, style: Style) -> str
     escapes = []
     for y, line in enumerate(table(rows, inner_w)[:inner_h]):
         line = line[:inner_w].ljust(inner_w)
-        win.addnstr(y + pad, pad, line, inner_w, style.header if y == 0 else curses.A_NORMAL)
+        win.addnstr(y + 1, 1, line, inner_w, style.header if y == 0 else curses.A_NORMAL)
         if y == 0:
             continue
         cell = flag if y - 1 in alerts else None
         if cell:
-            win.chgat(y + pad, pad + cell[0], cell[1] - cell[0], style.flag)
-        escapes.append(linked_row(top + pad + y, left + pad, line, rows[y - 1].url, cell, style.flag_sgr))
+            win.chgat(y + 1, 1 + cell[0], cell[1] - cell[0], style.flag)
+        escapes.append(linked_row(top + 1 + y, left + 1, line, rows[y - 1].url, cell, style.flag_sgr))
     win.noutrefresh()
     return "".join(escapes)
 
@@ -217,15 +184,13 @@ def draw(stdscr: curses.window, reviews: Tail, errors: Tail, show_log: bool, sty
         stdscr.noutrefresh()
         curses.doupdate()
         return
-    top = 0 if herdr.enabled() else 1
-    if top:
-        stdscr.addnstr(0, max(0, (w - len(TITLE)) // 2), TITLE, w, curses.A_BOLD | curses.A_REVERSE)
+    stdscr.addnstr(0, max(0, (w - len(TITLE)) // 2), TITLE, w, curses.A_BOLD | curses.A_REVERSE)
     draw_footer(stdscr, h - 1, w)
     stdscr.noutrefresh()
     left = w * 3 // 5 if show_log else w
-    escapes = draw_table(stdscr.derwin(h - 1 - top, left, top, 0), reviews, bool(top), style)
+    escapes = draw_table(stdscr.derwin(h - 2, left, 1, 0), reviews, style)
     if show_log:
-        draw_log(stdscr.derwin(h - 1 - top, w - left, top, left), errors)
+        draw_log(stdscr.derwin(h - 2, w - left, 1, left), errors)
     curses.doupdate()
     # curses cannot write OSC 8 hyperlinks, so overwrite the rows after the update, then put the cursor back
     y, x = curses.getsyx()
@@ -275,11 +240,8 @@ def run(stdscr: curses.window, reviews: Tail, errors: Tail, theme: Theme) -> Non
     stdscr.timeout(200)
     dirty, show_log = True, False
     reviews.poll()
-    herdr.status("idle", "Auto Reviewer")
     while True:
-        new = reviews.poll()
-        report(new)
-        dirty = any([new, errors.poll()]) or dirty
+        dirty = any([reviews.poll(), errors.poll()]) or dirty
         if dirty:
             draw(stdscr, reviews, errors, show_log, style)
             dirty = False
@@ -304,8 +266,6 @@ def main() -> None:
         curses.wrapper(run, Tail(Path(reviews_log), from_start=True), Tail(Path(errors_log)), theme)
     except KeyboardInterrupt:
         pass
-    finally:
-        herdr.release()
 
 
 if __name__ == "__main__":

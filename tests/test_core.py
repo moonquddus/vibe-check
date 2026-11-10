@@ -7,7 +7,7 @@ from auto_reviewer import actions, config, gates, jira
 from auto_reviewer.diff import commentable_lines
 from auto_reviewer.reviewer import Comment, Review, ReviewError, build_prompt, earlier_threads, parse
 from auto_reviewer.state import Seen
-from auto_reviewer.watch import Event, Posted, Tail, event, flagged, linked_row, posted, table, wrap
+from auto_reviewer.watch import Posted, Tail, flagged, linked_row, posted, table, wrap
 
 DIFF = """diff --git a/app.py b/app.py
 index 111..222 100644
@@ -154,22 +154,21 @@ def test_load_accepts_authors_only(tmp_path: Path):
     assert config.load(path).poll_seconds == 120
 
 
-def test_directory_prefers_env_dirs_with_a_config(tmp_path: Path, monkeypatch):
-    own, plugin = tmp_path / "own", tmp_path / "plugin"
+def test_directory_prefers_env_dir_with_a_config(tmp_path: Path, monkeypatch):
+    own, repo = tmp_path / "own", tmp_path / "repo"
     own.mkdir()
-    plugin.mkdir()
-    (plugin / "config.yaml").write_text("")
+    repo.mkdir()
+    (repo / "config.yaml").write_text("")
+    monkeypatch.setattr(config, "ROOT", repo)
     monkeypatch.setenv("AUTO_REVIEWER_CONFIG_DIR", str(own))
-    monkeypatch.setenv("HERDR_PLUGIN_CONFIG_DIR", str(plugin))
-    assert config.directory() == plugin
+    assert config.directory() == repo
     (own / "config.yaml").write_text("")
     assert config.directory() == own
 
 
-def test_directory_names_first_env_dir_when_no_config(tmp_path: Path, monkeypatch):
+def test_directory_names_env_dir_when_no_config(tmp_path: Path, monkeypatch):
     monkeypatch.setattr(config, "ROOT", tmp_path / "repo")
-    monkeypatch.delenv("AUTO_REVIEWER_CONFIG_DIR", raising=False)
-    monkeypatch.setenv("HERDR_PLUGIN_CONFIG_DIR", str(tmp_path))
+    monkeypatch.setenv("AUTO_REVIEWER_CONFIG_DIR", str(tmp_path))
     assert config.directory() == tmp_path
     with pytest.raises(config.ConfigError, match="Missing"):
         config.load()
@@ -248,16 +247,6 @@ def test_flagged_marks_latest_review_with_changes_requested():
 def test_linked_row():
     assert linked_row(3, 4, "ab", "https://u", None, "") == "\x1b[4;5H\x1b]8;;https://u\x1b\\ab\x1b]8;;\x1b\\"
     assert linked_row(0, 0, "abcd", "u", (1, 3), "<s>") == "\x1b[1;1H\x1b]8;;u\x1b\\a<s>bc\x1b[0md\x1b]8;;\x1b\\"
-
-
-def test_event():
-    assert event("2026-11-03 11:49:17,876 INFO https://github.com/o/r/pull/7: reviewing") == Event("working", "Reviewing r#7")
-    assert event("2026-11-03 11:49:17,876 INFO https://github.com/o/r/pull/7: posted APPROVE with 2 comments, author ann") == \
-        Event("idle", "Approved r#7", ("Approved r#7", "ann, 2 comments"))
-    assert event("2026-11-03 11:49:17,876 INFO https://github.com/o/r/pull/7: no new valid inline comments, nothing posted") == \
-        Event("idle", "Checked r#7")
-    assert event("2026-11-03 13:25:12,894 ERROR https://github.com/o/r/pull/7: Command failed") == Event("idle", "Failed r#7")
-    assert event("2026-11-03 13:25:12,894 WARNING https://github.com/o/r/pull/7: no Jira context, x") is None
 
 
 def test_wrap():

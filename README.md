@@ -11,7 +11,7 @@ It also reviews new commits on PRs that you reviewed before. It skips draft PRs 
 
 ## Requirements
 - macOS, [`uv`](https://docs.astral.sh/uv/), `gh` (logged in), `claude` (logged in)
-- Optional: [herdr](https://herdr.dev) 0.9.5 or later, to run it as a herdr plugin
+- Optional: the [Herdr desktop app](https://herdr.dev) 0.1.14 or later, to show it as a Herdr panel
 
 ## Setup
 ```bash
@@ -54,30 +54,14 @@ To stop: `launchctl bootout gui/$(id -u)/com.mmt.auto-reviewer`
 
 `scripts/watch.sh` uses the same launchd job. When you stop `watch.sh`, it also stops the background runner.
 
-## Run in herdr
-Install the plugin from GitHub, and put your config in the herdr plugin config folder:
+## Run in the Herdr desktop app
+Do the [Setup](#setup), then install the mod:
 ```bash
-herdr plugin install moonquddus/auto-reviewer
-dir="$(herdr plugin config-dir auto-reviewer)"
-curl -fsSL https://raw.githubusercontent.com/moonquddus/auto-reviewer/main/config.example.yaml -o "$dir/config.yaml"
+scripts/install-herdr-mod.sh
 ```
-Edit `$dir/config.yaml`. Relative guide paths in it are relative to `$dir` first, then to the plugin. To update: `herdr plugin update auto-reviewer`. After an update, open the pane again, so that the runner uses the new version.
+It copies `herdr-mod/` to `~/.config/herdr-app/mods/auto-reviewer/`, and checks it. Herdr docks it as a panel on the right. Run the script again after you update the repo.
 
-To use a local clone instead, do the [Setup](#setup), then run `herdr plugin link "$PWD"`. It uses `config.yaml` in the clone, if `$dir/config.yaml` does not exist.
-
-Open the view:
-```bash
-herdr plugin pane open --plugin auto-reviewer --entrypoint watch
-```
-It opens the watch view in a split pane. When you close the pane, it stops the runner. Ctrl-click a row to open its PR. The herdr sidebar shows the reviewer state, and herdr shows a notification for each posted review. To open it with a key, add this to `~/.config/herdr/config.toml`:
-```toml
-[[keys.command]]
-key = "prefix+r"
-type = "plugin_action"
-command = "auto-reviewer.open"
-description = "open auto-reviewer"
-```
-Then run `herdr server reload-config`.
+When the panel opens, it starts the launchd runner. When the panel closes, or Herdr quits, it stops the runner. The panel shows the runner state, a table of posted reviews, and a toast for each posted review. A red status means that the newest review of that PR requested changes. Click a row to open its PR. Click **Logs** to show the launchd error log. Click **Clear** to clear the table.
 
 ## Tests
 ```bash
