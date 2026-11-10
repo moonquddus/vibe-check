@@ -59,7 +59,12 @@ Do the [Setup](#setup), then install the mod:
 ```bash
 scripts/install-herdr-mod.sh
 ```
-It copies `herdr-mod/` to `~/.config/herdr-app/mods/auto-reviewer/`, and checks it. Herdr docks it as a panel on the right. Run the script again after you update the repo.
+It copies `herdr-mod/` to `~/.config/herdr-app/mods/auto-reviewer/`, and checks it with a stub runner. It also binds `cmd-alt-r` in `~/.config/herdr-app/keys.json` to open the panel. To use a different key, give it as an argument, for example `scripts/install-herdr-mod.sh cmd-alt-shift-r`. Run the script again after you update the repo.
+
+Press `cmd-alt-r` in Herdr to open the panel beside the focused pane. Or run:
+```bash
+herdr-app do pane.split --direction right --mod auto-reviewer
+```
 
 When the panel opens, it starts the launchd runner. When the panel closes, or Herdr quits, it stops the runner. The panel shows the runner state, a table of posted reviews, and a toast for each posted review. A red status means that the newest review of that PR requested changes. Click a row to open its PR. Click **Logs** to show the launchd error log. Click **Clear** to clear the table.
 

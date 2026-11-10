@@ -1,9 +1,8 @@
 import { View, div } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
 import { exec, home, notify, playSound, settings, theme } from "herdr";
-import { REPO } from "./repo.js";
+import { LABEL, REPO } from "./install.js";
 
-const LABEL = "com.mmt.auto-reviewer";
 const HISTORY = 1000;
 const POSTED = /^(\S+ \d\d:\d\d)\S* INFO (\S+): posted (\w+) with (\d+) comments(?:, author (\S+))?$/;
 const EVENT = /^\S+ \S+ (INFO|ERROR) (\S+): (reviewing|posted|no new valid|dry run|)/;
