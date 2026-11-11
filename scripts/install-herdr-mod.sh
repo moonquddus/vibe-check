@@ -3,7 +3,7 @@ set -euo pipefail
 
 repo="$(cd "$(dirname "$0")/.." && pwd)"
 app="${HERDR_APP_HOME:-$HOME/.config/herdr-app}"
-target="$app/mods/auto-reviewer"
+target="$app/mods/vibe-check"
 key="${1:-cmd-alt-r}"
 
 install_to() {
@@ -18,10 +18,10 @@ trap 'rm -rf "$check"' EXIT
 mkdir -p "$check/repo/scripts"
 printf '#!/bin/sh\n' > "$check/repo/scripts/install-launchd.sh"
 chmod +x "$check/repo/scripts/install-launchd.sh"
-install_to "$check/mod" "$check/repo" com.mmt.auto-reviewer.check
+install_to "$check/mod" "$check/repo" com.mmt.vibe-check.check
 herdr-app check "$check/mod"
 
-install_to "$target" "$repo" com.mmt.auto-reviewer
+install_to "$target" "$repo" com.mmt.vibe-check
 rm -f "$target/repo.js"
 
 python3 - "$app/keys.json" "$key" <<'PY'
@@ -30,7 +30,7 @@ from pathlib import Path
 
 path, key = Path(sys.argv[1]), sys.argv[2]
 keys = json.loads(path.read_text()) if path.exists() else {}
-action = {"command": "pane.split", "args": {"direction": "right", "mod": "auto-reviewer"}}
+action = {"command": "pane.split", "args": {"direction": "right", "mod": "vibe-check"}}
 bound = keys.setdefault("global", {}).get(key)
 if bound in (None, action):
     keys["global"][key] = action
@@ -39,4 +39,4 @@ if bound in (None, action):
 else:
     print(f"{key} is already bound to {bound}. Run again with a free key, for example: scripts/install-herdr-mod.sh cmd-alt-shift-r")
 PY
-echo "Installed the auto-reviewer mod in $target"
+echo "Installed the vibe-check mod in $target"

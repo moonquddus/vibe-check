@@ -6,7 +6,7 @@ import urllib.error
 import urllib.request
 from functools import cache
 
-from auto_reviewer.config import JiraConfig
+from vibe_check.config import JiraConfig
 
 KEY = re.compile(r"\b[A-Z][A-Z0-9]+-\d+\b")
 MAX_TICKETS = 3

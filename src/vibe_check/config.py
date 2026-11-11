@@ -6,13 +6,13 @@ from typing import Literal
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
-DIR_ENV = "AUTO_REVIEWER_CONFIG_DIR"
+DIR_ENV = "VIBE_CHECK_CONFIG_DIR"
 
 
 @dataclass(frozen=True)
 class ClaudeConfig:
     auth: Literal["login", "token"] = "login"
-    token_keychain_service: str = "auto-reviewer-claude-token"
+    token_keychain_service: str = "vibe-check-claude-token"
     model: str = "sonnet"
     timeout_seconds: int = 600
 
@@ -21,7 +21,7 @@ class ClaudeConfig:
 class JiraConfig:
     base_url: str = ""
     email: str = ""
-    token_keychain_service: str = "auto-reviewer-jira-token"
+    token_keychain_service: str = "vibe-check-jira-token"
 
 
 @dataclass(frozen=True)

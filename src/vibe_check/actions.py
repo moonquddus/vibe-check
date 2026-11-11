@@ -1,4 +1,4 @@
-from auto_reviewer.reviewer import Review
+from vibe_check.reviewer import Review
 
 EVENTS = {"accept": "APPROVE", "needs_changes": "REQUEST_CHANGES"}
 

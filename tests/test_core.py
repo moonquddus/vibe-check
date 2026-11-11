@@ -3,11 +3,11 @@ from pathlib import Path
 
 import pytest
 
-from auto_reviewer import actions, config, gates, jira
-from auto_reviewer.diff import commentable_lines
-from auto_reviewer.reviewer import Comment, Review, ReviewError, build_prompt, earlier_threads, parse
-from auto_reviewer.state import Seen
-from auto_reviewer.watch import Posted, Tail, flagged, linked_row, posted, table, wrap
+from vibe_check import actions, config, gates, jira
+from vibe_check.diff import commentable_lines
+from vibe_check.reviewer import Comment, Review, ReviewError, build_prompt, earlier_threads, parse
+from vibe_check.state import Seen
+from vibe_check.watch import Posted, Tail, flagged, linked_row, posted, table, wrap
 
 DIFF = """diff --git a/app.py b/app.py
 index 111..222 100644
@@ -160,7 +160,7 @@ def test_directory_prefers_env_dir_with_a_config(tmp_path: Path, monkeypatch):
     repo.mkdir()
     (repo / "config.yaml").write_text("")
     monkeypatch.setattr(config, "ROOT", repo)
-    monkeypatch.setenv("AUTO_REVIEWER_CONFIG_DIR", str(own))
+    monkeypatch.setenv("VIBE_CHECK_CONFIG_DIR", str(own))
     assert config.directory() == repo
     (own / "config.yaml").write_text("")
     assert config.directory() == own
@@ -168,7 +168,7 @@ def test_directory_prefers_env_dir_with_a_config(tmp_path: Path, monkeypatch):
 
 def test_directory_names_env_dir_when_no_config(tmp_path: Path, monkeypatch):
     monkeypatch.setattr(config, "ROOT", tmp_path / "repo")
-    monkeypatch.setenv("AUTO_REVIEWER_CONFIG_DIR", str(tmp_path))
+    monkeypatch.setenv("VIBE_CHECK_CONFIG_DIR", str(tmp_path))
     assert config.directory() == tmp_path
     with pytest.raises(config.ConfigError, match="Missing"):
         config.load()
@@ -282,7 +282,7 @@ def test_prompt_puts_tickets_before_diff():
 
 @pytest.fixture
 def run_process(monkeypatch, tmp_path):
-    from auto_reviewer import __main__ as main, github, jira
+    from vibe_check import __main__ as main, github, jira
 
     def run(earlier_reviews, verdict):
         posted = []

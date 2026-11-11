@@ -5,13 +5,13 @@ import subprocess
 from dataclasses import replace
 from pathlib import Path
 
-from auto_reviewer import actions, config, gates, github, jira
-from auto_reviewer.diff import commentable_lines
-from auto_reviewer.reviewer import ReviewError, build_prompt, earlier_threads, review
-from auto_reviewer.state import DRY_RUN_STATE, STATE, Seen
+from vibe_check import actions, config, gates, github, jira
+from vibe_check.diff import commentable_lines
+from vibe_check.reviewer import ReviewError, build_prompt, earlier_threads, review
+from vibe_check.state import DRY_RUN_STATE, STATE, Seen
 
-LOG = Path.home() / "Library/Logs/auto-reviewer.log"
-log = logging.getLogger("auto-reviewer")
+LOG = Path.home() / "Library/Logs/vibe-check.log"
+log = logging.getLogger("vibe-check")
 
 
 def allowed(cfg: config.Config, author: str) -> bool:
@@ -60,7 +60,7 @@ def process(cfg: config.Config, seen: Seen, pr: github.PullRequest, me: str) -> 
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(prog="auto-reviewer")
+    parser = argparse.ArgumentParser(prog="vibe-check")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--config", type=Path)
     args = parser.parse_args()

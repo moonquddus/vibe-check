@@ -61,11 +61,11 @@ class Tail {
   }
 }
 
-export default class AutoReviewer extends View {
+export default class VibeCheck extends View {
   init(_props, cx) {
     const logs = `${home()}/Library/Logs`;
-    this.reviews = new Tail(`${logs}/auto-reviewer.log`);
-    this.errors = new Tail(`${logs}/auto-reviewer.launchd.log`);
+    this.reviews = new Tail(`${logs}/vibe-check.log`);
+    this.errors = new Tail(`${logs}/vibe-check.launchd.log`);
     this.state = { working: false, text: "Starting" };
     this.showLog = false;
     this.failure = null;
@@ -109,7 +109,7 @@ export default class AutoReviewer extends View {
 
   header(t) {
     return h_flex().h(34).flex_none().px(12).gap(8).items_center().border_b(1).border_color(t.border).bg(t.chrome)
-      .child(div().font_semibold().text_size(12.5).text_color(t.foreground).child("Auto Reviewer"))
+      .child(div().font_semibold().text_size(12.5).text_color(t.foreground).child("Vibe Check"))
       .child(div().w(12).flex_none().text_color(this.state.working ? t.working : t.dim)
         .when(this.state.working, (el) => el.frames(SPIN, 90)).child(this.state.working ? SPIN[0] : "•"))
       .child(div().flex_1().truncate().text_size(11.5).text_color(t.muted).child(this.state.text))
@@ -161,7 +161,7 @@ export default class AutoReviewer extends View {
   log(t) {
     return v_flex().w_2_5().flex_none().border_l(1).border_color(t.border).bg(t.background)
       .child(div().h(26).flex_none().px(10).flex().items_center().text_size(11).font_semibold().text_color(t.muted)
-        .border_b(1).border_color(t.border).child("auto-reviewer.launchd.log"))
+        .border_b(1).border_color(t.border).child("vibe-check.launchd.log"))
       .child(v_flex().id("log").flex_1().min_h(0).p(8).overflow_y_scrollbar()
         .font_family(settings().font_family ?? "JetBrains Mono").text_size(11).text_color(t.muted)
         .children(this.errors.lines.map((line, i) => div().id(`log-${i}`).child(line))));

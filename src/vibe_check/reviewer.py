@@ -5,7 +5,7 @@ import tempfile
 from dataclasses import dataclass
 from typing import Literal
 
-from auto_reviewer.config import ClaudeConfig
+from vibe_check.config import ClaudeConfig
 
 Verdict = Literal["accept", "needs_changes"]
 LABELS = ["issue", "suggestion", "todo", "question", "thought", "nitpick", "chore", "note"]

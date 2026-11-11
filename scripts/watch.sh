@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-label=com.mmt.auto-reviewer
+label=com.mmt.vibe-check
 repo="$(cd "$(dirname "$0")/.." && pwd)"
-logs=("$HOME/Library/Logs/auto-reviewer.log" "$HOME/Library/Logs/auto-reviewer.launchd.log")
+logs=("$HOME/Library/Logs/vibe-check.log" "$HOME/Library/Logs/vibe-check.launchd.log")
 
 touch "${logs[@]}"
 "$repo/scripts/install-launchd.sh" >/dev/null || { read -rp "Press Enter to close."; exit 1; }
@@ -14,4 +14,4 @@ stop() {
 }
 trap stop EXIT
 
-uv run --quiet --project "$repo" python -m auto_reviewer.watch "${logs[@]}"
+uv run --quiet --project "$repo" python -m vibe_check.watch "${logs[@]}"

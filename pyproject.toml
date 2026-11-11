@@ -1,5 +1,5 @@
 [project]
-name = "auto-reviewer"
+name = "vibe-check"
 version = "0.1.0"
 description = "Review GitHub PRs assigned to you with Claude Code headless"
 readme = "README.md"

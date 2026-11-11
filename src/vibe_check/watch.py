@@ -11,7 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 HISTORY = 1000
-TITLE = "Auto Reviewer"
+TITLE = "Vibe Check"
 FOOTER = (("Ctrl+Click", "Open PR"), ("c", "clear"), ("d", "debug"), ("q", "quit"))
 POSTED = re.compile(r"^(\S+ \d\d:\d\d)\S* INFO (\S+): posted (\w+) with (\d+) comments(?:, author (\S+))?$")
 STATUS = {"APPROVE": "Approved", "REQUEST_CHANGES": "Changes requested", "COMMENT": "Commented"}

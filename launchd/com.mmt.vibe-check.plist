@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.mmt.auto-reviewer</string>
+  <string>com.mmt.vibe-check</string>
   <key>ProgramArguments</key>
   <array>
     <string>__UV__</string>
@@ -12,7 +12,7 @@
     <string>__REPO__</string>
     <string>python</string>
     <string>-m</string>
-    <string>auto_reviewer</string>
+    <string>vibe_check</string>
   </array>
   <key>WorkingDirectory</key>
   <string>__REPO__</string>
@@ -20,7 +20,7 @@
   <dict>
     <key>PATH</key>
     <string>__PATH__</string>
-    <key>AUTO_REVIEWER_CONFIG_DIR</key>
+    <key>VIBE_CHECK_CONFIG_DIR</key>
     <string>__CONFIG__</string>
   </dict>
   <key>StartInterval</key>
@@ -28,6 +28,6 @@
   <key>RunAtLoad</key>
   <true/>
   <key>StandardErrorPath</key>
-  <string>__HOME__/Library/Logs/auto-reviewer.launchd.log</string>
+  <string>__HOME__/Library/Logs/vibe-check.launchd.log</string>
 </dict>
 </plist>

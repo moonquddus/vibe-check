@@ -1,4 +1,4 @@
-# auto-reviewer
+# vibe-check
 
 Reviews GitHub PRs that request a review from you or your team, with Claude Code in headless mode (`claude -p`).
 
@@ -17,9 +17,9 @@ It also reviews new commits on PRs that you reviewed before. It skips draft PRs 
 ```bash
 cp config.example.yaml config.yaml   # edit allow list, model, auth
 uv sync
-uv run python -m auto_reviewer --dry-run
+uv run python -m vibe_check --dry-run
 ```
-Look at the output in `~/Library/Logs/auto-reviewer.log`. When it is correct, set `dry_run: false`.
+Look at the output in `~/Library/Logs/vibe-check.log`. When it is correct, set `dry_run: false`.
 
 ## How Claude reviews
 Edit `review-guide.md`. Claude gets it as the system prompt. To use a different guide for a repo, add it to `repo_guides` in `config.yaml`.
@@ -27,7 +27,7 @@ Edit `review-guide.md`. Claude gets it as the system prompt. To use a different 
 ## Jira tickets
 When the PR title, branch or description has a Jira key (for example `ABC-123`), it gets the ticket and gives it to Claude. Claude then checks that the PR does what the ticket asks. To turn it on, set `jira` in `config.yaml`, and store an [API token](https://id.atlassian.com/manage-profile/security/api-tokens) in the Keychain:
 ```bash
-security add-generic-password -a "$USER" -s auto-reviewer-jira-token -w <token>
+security add-generic-password -a "$USER" -s vibe-check-jira-token -w <token>
 ```
 If it cannot find or read a ticket, it reviews without it, and adds a note to the review that it could not review the intent. It adds the note one time per PR.
 
@@ -36,7 +36,7 @@ If it cannot find or read a ticket, it reviews without it, and adds a note to th
 - `claude.auth: token`: uses a long-lived token from the Keychain, for example for an Enterprise account:
   ```bash
   claude setup-token   # log in with the account you want
-  security add-generic-password -a "$USER" -s auto-reviewer-claude-token -w <token>
+  security add-generic-password -a "$USER" -s vibe-check-claude-token -w <token>
   ```
 
 ## Run
@@ -50,7 +50,7 @@ To keep it running when no terminal is open:
 ```bash
 scripts/install-launchd.sh
 ```
-To stop: `launchctl bootout gui/$(id -u)/com.mmt.auto-reviewer`
+To stop: `launchctl bootout gui/$(id -u)/com.mmt.vibe-check`
 
 `scripts/watch.sh` uses the same launchd job. When you stop `watch.sh`, it also stops the background runner.
 
@@ -59,11 +59,11 @@ Do the [Setup](#setup), then install the mod:
 ```bash
 scripts/install-herdr-mod.sh
 ```
-It copies `herdr-mod/` to `~/.config/herdr-app/mods/auto-reviewer/`, and checks it with a stub runner. It also binds `cmd-alt-r` in `~/.config/herdr-app/keys.json` to open the panel. To use a different key, give it as an argument, for example `scripts/install-herdr-mod.sh cmd-alt-shift-r`. Run the script again after you update the repo.
+It copies `herdr-mod/` to `~/.config/herdr-app/mods/vibe-check/`, and checks it with a stub runner. It also binds `cmd-alt-r` in `~/.config/herdr-app/keys.json` to open the panel. To use a different key, give it as an argument, for example `scripts/install-herdr-mod.sh cmd-alt-shift-r`. Run the script again after you update the repo.
 
 Press `cmd-alt-r` in Herdr to open the panel beside the focused pane. Or run:
 ```bash
-herdr-app do pane.split --direction right --mod auto-reviewer
+herdr-app do pane.split --direction right --mod vibe-check
 ```
 
 When the panel opens, it starts the launchd runner. When the panel closes, or Herdr quits, it stops the runner. The panel shows the runner state, a table of posted reviews, and a toast for each posted review. A red status means that the newest review of that PR requested changes. Click a row to open its PR. Click **Logs** to show the launchd error log. Click **Clear** to clear the table.

@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-STATE_DIR = Path.home() / "Library/Application Support/auto-reviewer"
+STATE_DIR = Path.home() / "Library/Application Support/vibe-check"
 STATE = STATE_DIR / "seen.json"
 DRY_RUN_STATE = STATE_DIR / "seen-dry-run.json"
 
