@@ -76,7 +76,7 @@ def main() -> None:
 
     me = github.viewer()
     seen = Seen(DRY_RUN_STATE if cfg.dry_run else STATE)
-    for pr in github.review_prs():
+    for pr in github.review_prs(lambda pr: seen.reviewed(pr.repo, pr.number)):
         if pr.author == me or not allowed(cfg, pr.author):
             continue
         try:

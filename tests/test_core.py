@@ -137,6 +137,8 @@ def test_seen_persists(tmp_path: Path):
     Seen(path).add(key)
     assert key in Seen(path)
     assert Seen.key("o/r", 1, "def") not in Seen(path)
+    assert Seen(path).reviewed("o/r", 1)
+    assert not Seen(path).reviewed("o/r", 11)
 
 
 @pytest.mark.parametrize("allow", ["", "allow:\n", "allow:\n  authors: []\n  teams: []\n"])

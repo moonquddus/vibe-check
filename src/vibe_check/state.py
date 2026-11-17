@@ -19,6 +19,9 @@ class Seen:
     def __contains__(self, key: str) -> bool:
         return key in self.keys
 
+    def reviewed(self, repo: str, number: int) -> bool:
+        return any(k.startswith(f"{repo}#{number}@") for k in self.keys)
+
     def add(self, key: str) -> None:
         self.keys.add(key)
         self.path.write_text(json.dumps(sorted(self.keys)))

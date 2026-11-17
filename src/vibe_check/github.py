@@ -1,5 +1,6 @@
 import json
 import subprocess
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import cache
 
@@ -28,9 +29,9 @@ def _search(*filters: str) -> list[PullRequest]:
             for r in rows]
 
 
-def review_prs() -> list[PullRequest]:
+def review_prs(followed: Callable[[PullRequest], bool]) -> list[PullRequest]:
     # A submitted review removes the request, so also search reviewed-by to catch later pushes.
-    prs = _search("--review-requested=@me") + _search("--reviewed-by=@me")
+    prs = _search("--review-requested=@me") + [pr for pr in _search("--reviewed-by=@me") if followed(pr)]
     return list({pr.url: pr for pr in prs}.values())
 
 
