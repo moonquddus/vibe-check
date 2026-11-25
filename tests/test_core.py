@@ -5,7 +5,7 @@ import pytest
 
 from vibe_check import actions, config, gates, jira
 from vibe_check.diff import commentable_lines
-from vibe_check.reviewer import Comment, Review, ReviewError, build_prompt, earlier_threads, parse
+from vibe_check.reviewer import Comment, Review, ReviewError, build_prompt, discussion, earlier_threads, parse
 from vibe_check.state import Seen
 from vibe_check.watch import Posted, Tail, flagged, linked_row, posted, table, wrap
 
@@ -282,6 +282,26 @@ def test_prompt_puts_tickets_before_diff():
     assert "<jira_tickets>" not in build_prompt("t", "b", "d")
 
 
+def test_discussion_skips_my_posts_and_empty_bodies():
+    conversation = [{"user": "dev", "body": "Let's use a queue."}, {"user": "dev", "body": " "}]
+    reviews = [{"user": "me", "body": "x"}, {"user": "lead", "body": "Agreed."}, {"user": "lead", "body": ""}]
+    comments = [
+        {"id": 1, "path": "a.py", "line": 3, "body": "Mine.", "user": "me", "reply_to": None},
+        {"id": 2, "path": "b.py", "line": 5, "body": "Why?", "user": "lead", "reply_to": None},
+        {"id": 3, "path": "b.py", "line": 5, "body": "Ticket changed.", "user": "dev", "reply_to": 2},
+    ]
+    assert discussion(conversation, reviews, comments, "me").split("\n\n---\n\n") == [
+        "dev: Let's use a queue.",
+        "Review from lead: Agreed.",
+        "b.py:5\nlead: Why?\nReply from dev: Ticket changed.",
+    ]
+
+
+def test_prompt_adds_discussion_only_when_present():
+    assert "<pr_discussion>\nx\n</pr_discussion>" in build_prompt("t", "b", "d", talk="x")
+    assert "<pr_discussion>" not in build_prompt("t", "b", "d")
+
+
 @pytest.fixture
 def run_process(monkeypatch, tmp_path):
     from vibe_check import __main__ as main, github, jira
@@ -292,6 +312,7 @@ def run_process(monkeypatch, tmp_path):
         monkeypatch.setattr(github, "diff", lambda pr: DIFF)
         monkeypatch.setattr(github, "review_comments", lambda pr: [])
         monkeypatch.setattr(github, "reviews", lambda pr: earlier_reviews)
+        monkeypatch.setattr(github, "conversation", lambda pr: [])
         monkeypatch.setattr(github, "post_review", lambda pr, body: posted.append(body))
         monkeypatch.setattr(jira, "tickets", lambda *a: "")
         monkeypatch.setattr(main, "review", lambda *a: Review(verdict, []))

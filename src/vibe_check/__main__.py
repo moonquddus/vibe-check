@@ -7,7 +7,7 @@ from pathlib import Path
 
 from vibe_check import actions, config, gates, github, jira
 from vibe_check.diff import commentable_lines
-from vibe_check.reviewer import ReviewError, build_prompt, earlier_threads, review
+from vibe_check.reviewer import ReviewError, build_prompt, discussion, earlier_threads, review
 from vibe_check.state import DRY_RUN_STATE, STATE, Seen
 
 LOG = Path.home() / "Library/Logs/vibe-check.log"
@@ -41,7 +41,8 @@ def process(cfg: config.Config, seen: Seen, pr: github.PullRequest, me: str) -> 
     except (jira.JiraError, subprocess.SubprocessError) as e:
         log.warning("%s: no Jira context, %s", pr.url, e)
         tickets = ""
-    prompt = build_prompt(pr.title, description, diff[: cfg.max_diff_bytes], earlier_threads(comments, me), tickets)
+    talk = discussion(github.conversation(pr), github.reviews(pr), comments, me)
+    prompt = build_prompt(pr.title, description, diff[: cfg.max_diff_bytes], earlier_threads(comments, me), tickets, talk)
     result = actions.settle(review(cfg.claude, cfg.guide_for(pr.repo), prompt), commentable_lines(diff), mine)
     note = jira.NOT_READ if cfg.jira.base_url and not tickets and not noted(pr, me) else ""
     if result is None and not note:
